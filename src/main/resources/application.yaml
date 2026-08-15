@@ -1,0 +1,46 @@
+server:
+  port: 5100
+
+spring:
+  application:
+    name: syntheticData
+  datasource:
+    url: jdbc:postgresql://localhost:5432/synthetic_data
+    username: hack
+    password: hack
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      idle-timeout: 300000
+      connection-timeout: 20000
+      pool-name: hackDataPool
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: false
+  ai:
+    google:
+      genai:
+        vertex-ai: true
+        project-id: project-54de4b72-d89d-4842-902
+        location: us-central1
+#  ai:
+#    google:
+#      genai:
+#        api-key: dummy_api_key
+#        project-id: dummy_project_id
+#        location: us-central1
+#        embedding:
+#          api-key: dummy_api_key
+#          project-id: dummy_project_id
+#          location: us-central1
+management:
+  otlp:
+    metrics:
+      export:
+        url: http://localhost:4318/v1/metrics
