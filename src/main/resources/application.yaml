@@ -5,9 +5,9 @@ spring:
   application:
     name: syntheticData
   datasource:
-    url: jdbc:postgresql://localhost:5432/synthetic_data
-    username: hack
-    password: hack
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
@@ -29,18 +29,8 @@ spring:
         vertex-ai: true
         project-id: project-54de4b72-d89d-4842-902
         location: us-central1
-#  ai:
-#    google:
-#      genai:
-#        api-key: dummy_api_key
-#        project-id: dummy_project_id
-#        location: us-central1
-#        embedding:
-#          api-key: dummy_api_key
-#          project-id: dummy_project_id
-#          location: us-central1
 management:
   otlp:
     metrics:
       export:
-        url: http://localhost:4318/v1/metrics
+        url: ${OTEL_METRICS_URL}
