@@ -27,7 +27,7 @@ spring:
     google:
       genai:
         vertex-ai: true
-        project-id: project-54de4b72-d89d-4842-902
+        project-id: ${GCP_PROJECT_ID}
         location: us-central1
 management:
   otlp:

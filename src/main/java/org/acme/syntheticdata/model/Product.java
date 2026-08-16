@@ -4,6 +4,8 @@ import org.acme.syntheticdata.model.enums.InventoryStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 @Data
 @Entity
 @Table(name = "product")
@@ -14,7 +16,7 @@ public class Product {
     private String code;
     private String name;
     private String description;
-    private Double price;
+    private BigDecimal price;
     @ManyToOne
     @JoinColumn(name = "category_id")
     private ProductCategory category;
