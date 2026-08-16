@@ -29,6 +29,9 @@ spring:
         vertex-ai: true
         project-id: ${GCP_PROJECT_ID}
         location: us-central1
+        model: gemini-2.5-flash
+agent:
+  mode: BOTH
 management:
   otlp:
     metrics:
