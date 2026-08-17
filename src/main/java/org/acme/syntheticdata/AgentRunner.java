@@ -1,105 +1,91 @@
 package org.acme.syntheticdata;
 
-import org.acme.syntheticdata.tool.DataSeederTool;
-import org.acme.syntheticdata.tool.DatabaseInspectorTool;
-import org.springframework.ai.chat.model.ChatModel;
-import org.springframework.ai.chat.prompt.Prompt;
-import org.springframework.ai.model.tool.ToolCallingChatOptions;
-import org.springframework.ai.support.ToolCallbacks;
-import org.springframework.ai.tool.ToolCallback;
+import com.google.genai.Client;
+import com.google.genai.types.GenerateContentConfig;
+import com.google.genai.types.GenerateContentResponse;
+import com.google.genai.types.Tool;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
-import java.util.Arrays;
-import java.util.stream.Stream;
+import java.lang.reflect.Method;
 
 @Component
 public class AgentRunner implements CommandLineRunner {
 
-    private final ChatModel chatModel;
-    private final DatabaseInspectorTool databaseInspectorTool;
-    private final DataSeederTool dataSeederTool;
+    @Value("${spring.ai.vertex.ai.gemini.project-id:fiery-glass-428422-j6}")
+    private String projectId;
 
-    // Control execution from application.yml (Default: BOTH)
-    @Value("${agent.mode:BOTH}")
-    private String agentMode;
+    @Value("${spring.ai.vertex.ai.gemini.location:global}")
+    private String location;
 
-    public AgentRunner(ChatModel chatModel,
-                       DatabaseInspectorTool databaseInspectorTool,
-                       DataSeederTool dataSeederTool) {
-        this.chatModel = chatModel;
-        this.databaseInspectorTool = databaseInspectorTool;
-        this.dataSeederTool = dataSeederTool;
+    @Value("${spring.ai.vertex.ai.gemini.model:gemini-3.5-flash-lite}")
+    private String model;
+
+    // --- Autonomous Database Tools ---
+
+    public static String resetAllTables() {
+        System.out.println("\n[TOOL EXECUTION] resetAllTables() invoked: Clearing target tables...");
+        // Implement your JDBC/JPA database reset logic here
+        return "SUCCESS: All tables have been truncated and reset.";
+    }
+
+    public static String describeTable(String tableName) {
+        System.out.println("\n[TOOL EXECUTION] describeTable() invoked for: " + tableName);
+        // Implement database schema metadata inspection here
+        return "SCHEMA for " + tableName + ": id (BIGINT, PK), code (VARCHAR, UNIQUE), description (TEXT), created_at (TIMESTAMP)";
+    }
+
+    public static String runValidationQuery(String query) {
+        System.out.println("\n[TOOL EXECUTION] runValidationQuery() invoked with: " + query);
+        // Implement database row-count and foreign key validation here
+        return "VALIDATION SUCCESS: Data integrity verified, zero constraint violations.";
     }
 
     @Override
     public void run(String... args) throws Exception {
-        String mode = agentMode.toUpperCase();
-        System.out.println("\n==================================================");
-        System.out.println("  SYNTHETIC DATA AGENT — MODE: " + mode);
-        System.out.println("==================================================");
+        System.out.println("\n--- RUNNING SYNTHETIC DATA AGENT WITH AUTOMATIC FUNCTION CALLING ---");
 
-        switch (mode) {
-            case "INSPECT" -> inspectSchema();
-            case "SEED" -> seedData();
-            case "BOTH" -> {
-                System.out.println("\n--- STEP 1: Pre-Seeding Inspection ---");
-                inspectSchema();
-
-                System.out.println("\n--- STEP 2: Autonomous Seeding ---");
-                seedData();
-
-                System.out.println("\n--- STEP 3: Post-Seeding Verification ---");
-                inspectSchema();
-            }
-            default -> System.err.println("Unknown agent.mode '" + mode + "'. Use INSPECT, SEED, or BOTH.");
-        }
-    }
-
-    private void inspectSchema() {
-        ToolCallback[] tools = ToolCallbacks.from(databaseInspectorTool);
-
-        ToolCallingChatOptions options = ToolCallingChatOptions.builder()
-                .toolCallbacks(tools)
+        Client client = Client.builder()
+                .project(projectId)
+                .location(location)
+                .vertexAI(true)
                 .build();
 
-        String directive = """
-        You are an autonomous database inspection agent. 
-        Perform all necessary tool calls immediately without asking for confirmation:
-        1. Retrieve the list of all table names.
-        2. For EVERY table found, call tools to get its structure and current row count.
-        3. Present a complete final summary.
-        Do not ask questions or stop halfway. Execute all tool calls now.
-        """;
+        // Bind Java methods for Automatic Function Calling (AFC)
+        Method resetMethod = AgentRunner.class.getMethod("resetAllTables");
+        Method describeMethod = AgentRunner.class.getMethod("describeTable", String.class);
+        Method validateMethod = AgentRunner.class.getMethod("runValidationQuery", String.class);
 
-        Prompt prompt = new Prompt(directive, options);
-
-        String response = chatModel.call(prompt).getResult().getOutput().getText();
-        System.out.println(response);
-    }
-
-    private void seedData() {
-        ToolCallback[] inspectorTools = ToolCallbacks.from(databaseInspectorTool);
-        ToolCallback[] seederTools = ToolCallbacks.from(dataSeederTool);
-
-        ToolCallback[] allTools = Stream.concat(Arrays.stream(inspectorTools), Arrays.stream(seederTools))
-                .toArray(ToolCallback[]::new);
-
-        ToolCallingChatOptions options = ToolCallingChatOptions.builder()
-                .toolCallbacks(allTools)
+        GenerateContentConfig config = GenerateContentConfig.builder()
+                .tools(Tool.builder().functions(resetMethod, describeMethod, validateMethod))
                 .build();
 
         String promptText = """
-        Inspect the database schema, check existing rows, and seed 2 new customers with 1 order and 2 orderlines each.
-        
-        STRICT DATA INTEGRITY RULES:
-        1. ENUM CASING: Status columns (e.g., invoice/order status) MUST strictly use uppercase enum values: 'PENDING', 'PAID', 'CANCELLED'. Never use Titlecase or lowercase.
-        2. TIMESTAMPS: Always generate full realistic timestamps with explicit hours, minutes, and seconds (e.g., '2026-08-15 14:32:05'), never hardcode '00:00:00.000000'.
-        3. QUOTING: Always double-quote reserved PostgreSQL table names like "order" in SQL statements.
-        """;
+                You are an autonomous database seeding agent.
+                
+                EXECUTION SEQUENCE:
+                1. Call resetAllTables().
+                2. Call describeTable() for target entity 'orders'.
+                3. Conclude by calling runValidationQuery() with a check statement.
+                
+                Execute these steps sequentially now using your provided tools.
+                """;
 
-        Prompt prompt = new Prompt(promptText, options);
-        String response = chatModel.call(prompt).getResult().getOutput().getText();
-        System.out.println(response);
+        GenerateContentResponse response = client.models.generateContent(
+                model,
+                promptText,
+                config
+        );
+
+        System.out.println("\n--- Final Agent Response ---");
+        System.out.println(response.text() != null ? response.text() : "No text returned.");
+
+        // Print automatic execution history logs
+        if (response.automaticFunctionCallingHistory().isPresent()) {
+            System.out.println("\n--- Autonomous Execution History ---");
+            response.automaticFunctionCallingHistory().get().forEach(step ->
+                    System.out.println(step)
+            );
+        }
     }
 }

@@ -8,8 +8,8 @@ import java.util.List;
 
 @Data
 @Entity
-@Table(name = "order")
-public class Order {
+@Table(name = "customer_order")
+public class CustomerOrder {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -20,7 +20,7 @@ public class Order {
     @ManyToOne
     @JoinColumn(name = "representative_id")
     private Representative representative;
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL,
+    @OneToMany(mappedBy = "customerOrder", cascade = CascadeType.ALL,
                 orphanRemoval = true, fetch =  FetchType.EAGER)
     private List<OrderLine> orderLines;
     private LocalDateTime orderDate;
