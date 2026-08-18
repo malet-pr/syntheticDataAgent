@@ -1,5 +1,6 @@
 package org.acme.syntheticdata.model;
 
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import org.acme.syntheticdata.model.enums.OrderStatus;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -26,6 +27,7 @@ public class CustomerOrder {
     private LocalDateTime orderDate;
     @Enumerated(EnumType.STRING)
     @Column(length = 20, nullable = false)
+    @JsonPropertyDescription("Valid ORDER status: PENDING, DELIVERED, RETURNED, CANCELLED. Do NOT use other statuses.")
     private OrderStatus status;
     @Column(name = "active", length = 1)
     private Character active = 'Y';

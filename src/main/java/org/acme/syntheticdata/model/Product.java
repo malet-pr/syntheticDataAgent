@@ -1,5 +1,6 @@
 package org.acme.syntheticdata.model;
 
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import org.acme.syntheticdata.model.enums.InventoryStatus;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -23,6 +24,7 @@ public class Product {
     private Integer quantity;
     @Enumerated(EnumType.STRING)
     @Column(length = 20, nullable = false)
+    @JsonPropertyDescription("Valid Inventory_Status: INSTOCK, LOWSTOCK, OUTOFSTOCK. Do NOT use other statuses.")
     private InventoryStatus inventoryStatus;
     private Integer rating;
     @Column(name = "active", length = 1)

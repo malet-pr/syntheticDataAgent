@@ -37,7 +37,7 @@ agent:
   mode: BOTH
 logging:
   level:
-    org.springframework.ai: INFO
+    org.springframework.ai: DEBUG
     org.springframework.web.client.RestClient: INFO
 management:
   otlp:

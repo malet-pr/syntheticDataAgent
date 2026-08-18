@@ -1,23 +1,31 @@
 package org.acme.syntheticdata.tool;
 
 import org.springframework.ai.tool.annotation.Tool;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Map;
 
+
 @Component
 public class DatabaseValidationTool {
 
-    private final JdbcTemplate jdbcTemplate;
+    private static JdbcTemplate jdbcTemplate;
 
-    public DatabaseValidationTool(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+    @Autowired
+    public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
+        DatabaseValidationTool.jdbcTemplate = jdbcTemplate;
     }
 
-    @Tool(description = "Executes a validation SQL query to verify data integrity rules (e.g. check casing or non-null constraints)")
-    public Map<String, Object> runValidationQuery(String sqlQuery, String ruleDescription) {
+    @Tool(name = "runValidationQuery" ,description = "Executes a SELECT query to audit data integrity rules (e.g. check for missing values or constraint violations). DO NOT pass INSERT/UPDATE here.")
+    public static Map<String, Object> runValidationQuery(String sqlQuery, String ruleDescription) {
         try {
+            if (sqlQuery.trim().toUpperCase().startsWith("INSERT") ||
+                    sqlQuery.trim().toUpperCase().startsWith("UPDATE")) {
+                return Map.of("status", "ERROR", "message", "Use executeSql tool for database mutations, not runValidationQuery.");
+            }
+
             List<Map<String, Object>> result = jdbcTemplate.queryForList(sqlQuery);
             boolean isValid = result.isEmpty();
 
@@ -33,8 +41,8 @@ public class DatabaseValidationTool {
         }
     }
 
-    @Tool(description = "Checks if any records in a table contain zeroed-out or default timestamp values (e.g., '00:00:00')")
-    public Map<String, Object> checkTimestampFormatting(String tableName, String columnName) {
+    @Tool(name = "checkTimestampFormatting", description = "Checks if any records in a table contain zeroed-out or default timestamp values (e.g., '00:00:00')")
+    public static Map<String, Object> checkTimestampFormatting(String tableName, String columnName) {
         try {
             String sanitizedTable = tableName.replaceAll("[^a-zA-Z0-9_]", "");
             String sanitizedColumn = columnName.replaceAll("[^a-zA-Z0-9_]", "");
@@ -55,7 +63,7 @@ public class DatabaseValidationTool {
                     "zeroedTimestampCount", invalidCount != null ? invalidCount : 0
             );
         } catch (Exception e) {
-            return Map.of("status", "ERROR", "message", e.getMessage());
+            return Map.of("status", "ERROR", "message", "Validation failed: " + e.getMessage());
         }
     }
 }

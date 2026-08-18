@@ -1,6 +1,7 @@
 package org.acme.syntheticdata.config;
 
 import com.google.genai.Client;
+import com.google.genai.types.AutomaticFunctionCallingConfig;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -15,4 +16,6 @@ public class GenAiClientConfig {
                 .vertexAI(true)
                 .build();
     }
+
+
 }
