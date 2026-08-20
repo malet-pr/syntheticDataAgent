@@ -21,6 +21,4 @@ public class OrderLine {
     private Product product;
     private BigDecimal amount;
     private Integer quantity;
-    @Column(name = "active", length = 1)
-    private Character active = 'Y';
 }

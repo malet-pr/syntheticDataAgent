@@ -53,15 +53,13 @@ CREATE TABLE product (
                          active CHAR(1) DEFAULT 'Y'
 );
 
--- "customer_order" is a PostgreSQL reserved word; quotes are required
 CREATE TABLE "customer_order" (
                          id SERIAL PRIMARY KEY,
                          invoice VARCHAR(50),
                          customer_id INT REFERENCES customer(id),
                          representative_id INT REFERENCES representative(id),
                          order_date TIMESTAMP,
-                         status VARCHAR(20) NOT NULL,
-                         active CHAR(1) DEFAULT 'Y'
+                         status VARCHAR(20) NOT NULL
 );
 
 CREATE TABLE orderline (
@@ -70,6 +68,5 @@ CREATE TABLE orderline (
                            order_id INT REFERENCES "customer_order"(id) ON DELETE CASCADE,
                            product_id INT REFERENCES product(id),
                            amount NUMERIC(12, 2),
-                           quantity INT,
-                           active CHAR(1) DEFAULT 'Y'
+                           quantity INT
 );

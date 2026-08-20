@@ -27,9 +27,9 @@ spring:
     vertex:
       ai:
         gemini:
-            project-id: "project-54de4b72-d89d-4842-902"
+            project-id: ${GCP_PROJECT_ID}
             location: "global"
-            model: "gemini-3.1-flash-lite"
+            model: "gemini-3.5-flash"
 devtools:
   restart:
     exclude: "db/**,*.db,*.mv.db,target/**"
@@ -37,10 +37,10 @@ agent:
   mode: BOTH
 logging:
   level:
-    org.springframework.ai: DEBUG
+    org.springframework.ai: INFO
     org.springframework.web.client.RestClient: INFO
-management:
-  otlp:
-    metrics:
-      export:
-        url: ${OTEL_METRICS_URL}
+#management:
+#  otlp:
+#    metrics:
+#      export:
+#        url: ${OTEL_METRICS_URL}
