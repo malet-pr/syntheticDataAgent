@@ -1,21 +1,19 @@
-package org.acme.syntheticdata.tool;
+package org.acme.syntheticdata.service;
 
-import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Map;
 
-@Component
-public class DatabaseResetTool {
+@Service
+public class DatabaseResetService {
 
     private final JdbcTemplate jdbcTemplate;
 
-    public DatabaseResetTool(JdbcTemplate jdbcTemplate) {
+    public DatabaseResetService(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    @Tool(name = "resetAllTables", description = "DANGER: ALWAYS use this dedicated tool when asked to reset, clear, wipe, or truncate all tables. Do NOT execute raw DELETE or TRUNCATE SQL statements.")
     public Map<String, Object> resetAllTables() {
         try {
             String fetchTablesSql = """

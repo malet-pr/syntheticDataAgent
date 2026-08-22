@@ -30,11 +30,6 @@ spring:
             project-id: ${GCP_PROJECT_ID}
             location: "global"
             model: "gemini-3.5-flash"
-devtools:
-  restart:
-    exclude: "db/**,*.db,*.mv.db,target/**"
-agent:
-  mode: BOTH
 logging:
   level:
     org.springframework.ai: INFO
