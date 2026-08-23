@@ -7,6 +7,8 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Map;
 
+import static org.acme.syntheticdata.tool.ToolResultSanitizer.sanitizeMap;
+
 @Component
 public class DatabaseExecutionTool {
 
@@ -32,7 +34,6 @@ public class DatabaseExecutionTool {
                 continue;
             }
 
-            // Basic validation guard against DDL or read-only queries if required
             String lower = trimmedSql.toLowerCase();
             if (!lower.startsWith("insert") && !lower.startsWith("update") && !lower.startsWith("delete")) {
                 return Map.of(
@@ -54,11 +55,11 @@ public class DatabaseExecutionTool {
             }
         }
 
-        return Map.of(
+        return sanitizeMap(Map.of(
                 "status", "SUCCESS",
                 "statementsExecuted", executedCount,
                 "rowsAffected", totalRowsAffected
-        );
+        ));
     }
 }
 

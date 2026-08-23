@@ -6,12 +6,18 @@ import com.google.genai.types.*;
 import lombok.extern.slf4j.Slf4j;
 import org.acme.syntheticdata.dto.SeedRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import static org.acme.syntheticdata.service.StepExecutor.executeBatchedStep;
 
 
 @Service
 @Slf4j
 public class DatabaseAgentService {
+
+    @Value("${spring.ai.max_batch_size}")
+    int maxBatchSize;
 
     @Autowired
     private AgentBaseService base;
@@ -44,30 +50,44 @@ public class DatabaseAgentService {
         }
 
         // Customer Entity
-        String step3 = Prompts.step3(req);
-        if(step3 != null) {
-            String resp = executeStep(chat, "Step 3 (Customers)", step3);
-            sb.append(resp).append("\n\n\n");
-        }
+        String customerResults = executeBatchedStep(
+                chat,
+                "Step 3 (Customers)",
+                req.customers(),
+                maxBatchSize,
+                Prompts::step3,
+                (label, prompt) -> executeStep(chat, label, prompt)
+        );
+        sb.append(customerResults);
 
         // Customer_order Entity
-        String step4 = Prompts.step4(req);
-        if(step4 != null) {
-            String resp = executeStep(chat, "Step 4 (Orders)", step4);
-            sb.append(resp).append("\n\n\n");
-        }
-        // Orderline Entity
-        String step5 = Prompts.step5(req);
-        if(step5 != null) {
-            String resp = executeStep(chat, "Step 5 (Orderlines)", step5);
-            sb.append(resp);
-        }
+        String orderResults = executeBatchedStep(
+                chat,
+                "Step 4 (Customer_orders)",
+                req.customer_orders(),
+                maxBatchSize,
+                Prompts::step4,
+                (label, prompt) -> executeStep(chat, label, prompt)
+        );
+        sb.append(orderResults);
 
-        log.info(sb.toString());
+        // Orderline Entity
+        String orderlineResults = executeBatchedStep(
+                chat,
+                "Step 5 (Orderlines)",
+                req.orderlines(),
+                maxBatchSize,
+                Prompts::step5,
+                (label, prompt) -> executeStep(chat, label, prompt)
+        );
+        sb.append(orderlineResults);
+
+        //log.info(sb.toString());
         return sb.toString();
     }
 
     private String executeStep(Chat chat, String stepName, String prompt) {
+        if(prompt == null) {return "Empty prompt";}
         log.info("\n\n--- EXECUTING: {} ---", stepName);
         GenerateContentResponse response = chat.sendMessage(prompt);
         if (response.text() != null && !response.text().isBlank()) {

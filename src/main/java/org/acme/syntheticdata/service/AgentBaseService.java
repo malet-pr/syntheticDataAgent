@@ -25,10 +25,10 @@ public class AgentBaseService {
     @Value("${spring.ai.vertex.ai.gemini.project-id}")
     String projectId;
 
-    @Value("${spring.ai.vertex.ai.gemini.location:global}")
+    @Value("${spring.ai.vertex.ai.gemini.location}")
     String location;
 
-    @Value("${spring.ai.vertex.ai.gemini.model:gemini-3.5-flash-lite}")
+    @Value("${spring.ai.vertex.ai.gemini.model}")
     String model;
 
     @Autowired
@@ -72,6 +72,17 @@ public class AgentBaseService {
         }
     }
 
+    String systemInstructionText = """
+        You are an automated synthetic data generation agent.
+        - Execute all database insertions for a step in a single batch query or transaction.
+        - NEVER execute single-row INSERT statements followed by verification SELECT queries.
+        - Rely on tool outputs provided without looping for verification.
+        Execution Efficiency Constraint:
+        - When inserting multiple records, you MUST combine them into a single multi-row INSERT statement (e.g., INSERT INTO table (col1, col2) VALUES (a, b), (c, d), ...).
+        - Do NOT issue individual INSERT statements row-by-row.
+        - Do NOT query SELECT MAX(id) or sequence values between individual rows within a step.
+        """;
+
     GenerateContentConfig configClient() {
         List<Method> toolMethods = scanToolMethods(
                 DatabaseInspectorTool.class,
@@ -93,7 +104,7 @@ public class AgentBaseService {
                         .build();
         return GenerateContentConfig.builder()
                 .systemInstruction(Content.builder()
-                        .parts(List.of(Part.fromText(systemSkills)))
+                        .parts(List.of(Part.fromText(systemSkills), Part.fromText(systemInstructionText)))
                         .build())
                 .automaticFunctionCalling(autoConfig)
                 .toolConfig(toolConfig)

@@ -7,6 +7,8 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Map;
 
+import static org.acme.syntheticdata.tool.ToolResultSanitizer.sanitizeMap;
+
 
 @Component
 public class DatabaseValidationTool {
@@ -29,13 +31,13 @@ public class DatabaseValidationTool {
             List<Map<String, Object>> result = jdbcTemplate.queryForList(sqlQuery);
             boolean isValid = result.isEmpty();
 
-            return Map.of(
+            return sanitizeMap(Map.of(
                     "status", "SUCCESS",
                     "ruleDescription", ruleDescription,
                     "passed", isValid,
                     "violationsCount", result.size(),
                     "sampleViolations", result.stream().limit(5).toList()
-            );
+            ));
         } catch (Exception e) {
             return Map.of("status", "ERROR", "ruleDescription", ruleDescription, "message", e.getMessage());
         }
@@ -55,13 +57,13 @@ public class DatabaseValidationTool {
             Long invalidCount = jdbcTemplate.queryForObject(sql, Long.class);
             boolean passed = invalidCount != null && invalidCount == 0;
 
-            return Map.of(
+            return sanitizeMap(Map.of(
                     "status", "SUCCESS",
                     "tableName", tableName,
                     "columnName", columnName,
                     "passed", passed,
                     "zeroedTimestampCount", invalidCount != null ? invalidCount : 0
-            );
+            ));
         } catch (Exception e) {
             return Map.of("status", "ERROR", "message", "Validation failed: " + e.getMessage());
         }

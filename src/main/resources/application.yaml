@@ -30,6 +30,7 @@ spring:
             project-id: ${GCP_PROJECT_ID}
             location: "global"
             model: "gemini-3.5-flash"
+    max_batch_size: 100
 logging:
   level:
     org.springframework.ai: INFO

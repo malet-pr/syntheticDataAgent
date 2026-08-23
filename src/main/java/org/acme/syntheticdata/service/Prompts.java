@@ -39,8 +39,8 @@ public class Prompts {
         return sb.toString();
     }
 
-    public static String step3(SeedRequest req) {
-        if(req.customers() == 0) return null;
+    public static String step3(int quantity) {
+        if(quantity == 0) return null;
         String step = """
                 You are an autonomous database seeding agent.
                 Use data-generation skill to generate %d customers.
@@ -49,24 +49,24 @@ public class Prompts {
                    - Customers in any status can be inactives.
                    - Only NEW customers can be not verified.
                 Use data-insertion skill to insert the sql generated.
-                """.formatted(req.customers());
+                """.formatted(quantity);
         return step;
     }
 
-    public static String step4(SeedRequest req) {
-        if(req.customer_orders() == 0) return null;
+    public static String step4(int quantity) {
+        if(quantity == 0) return null;
         String step = """
             You are an autonomous database seeding agent.
             Follow these directives:
                 - Use data-generation skill to generate %d NEW customer_orders.
                 - These MUST be additional unique orders for existing customers (do not re-insert or replace existing orders).
             Use data-insertion skill to insert the generated SQL.
-            """.formatted(req.customer_orders());
+            """.formatted(quantity);
         return step;
     }
 
-    public static String step5(SeedRequest req) {
-        if(req.orderlines() == 0) return null;
+    public static String step5(int quantity) {
+        if(quantity == 0) return null;
         String step = """
             You are an autonomous database seeding agent.
             Follow these directives:
@@ -74,7 +74,7 @@ public class Prompts {
                 - For each orderline: amount = product_price * quantity.
                 - No more than 30 percent of the orders can have only 1 orderline.
             Use data-insertion skill to insert the generated SQL.
-            """.formatted(req.orderlines());
+            """.formatted(quantity);
         return step;
     }
 
