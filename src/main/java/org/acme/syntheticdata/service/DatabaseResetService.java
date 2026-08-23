@@ -1,5 +1,6 @@
 package org.acme.syntheticdata.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -8,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
+@Slf4j
 public class DatabaseResetService {
 
     private final JdbcTemplate jdbcTemplate;
@@ -25,7 +27,6 @@ public class DatabaseResetService {
                   AND table_type = 'BASE TABLE'
                   AND table_name != 'flyway_schema_history'
                 """;
-
             List<String> tables = jdbcTemplate.queryForList(fetchTablesSql, String.class);
             if (tables.isEmpty()) {
                 return Map.of("status", "SUCCESS", "message", "No user tables found to truncate.");
