@@ -26,6 +26,15 @@ This skill should run every time a user request the generation of data.
 14. When a step requires population across multiple tables, combine all batch INSERT statements into a single script/tool call separated by semicolons rather than making separate tool calls per table.
 15. Before returning the statements, verify that all requested row counts, distributions, foreign-key references, categorical constraints, and derived-value rules are satisfied.
 
+## Rules for Dynamic Distribution:
+1. When generating data for a target table, query `synthetic_distribution_rules` for that `table_name` if you have not already fetched it.
+2. Interpret the retrieved JSON rules as follows:
+    - `child_cardinality`: When creating child rows (e.g., `order_line` for an `order`), generate the exact number of child records per parent based on the declared `weight_percent` ratios.
+    - `categorical_percent`: Distribute enum/text column values strictly following the given percentage weights.
+    - `pareto_skew`: Concentrate 80% of foreign key references on the first 20% of parent records.
+    - `range_uniform`: Keep numeric values strictly bounded between `min` and `max`.
+3. Do NOT issue follow-up verification queries after reading the distribution rules. Apply them directly to the batch `INSERT`.
+
 Do not insert the data, generate the insert statements.
 
 
