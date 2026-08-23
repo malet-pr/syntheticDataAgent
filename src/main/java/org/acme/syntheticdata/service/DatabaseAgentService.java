@@ -33,28 +33,28 @@ public class DatabaseAgentService {
         String step1 = Prompts.step1(req);
         if(step1 != null) {
             String resp = executeStep(chat, "Step 1 (Logistic)", step1);
-            sb.append(resp);
+            sb.append(resp).append("\n\n\n");
         }
 
         // Products Entities
         String step2 = Prompts.step2(req);
         if(step2 != null) {
             String resp = executeStep(chat, "Step 2 (Products)", step2);
-            sb.append(resp);
+            sb.append(resp).append("\n\n\n");
         }
 
         // Customer Entity
         String step3 = Prompts.step3(req);
         if(step3 != null) {
             String resp = executeStep(chat, "Step 3 (Customers)", step3);
-            sb.append(resp);
+            sb.append(resp).append("\n\n\n");
         }
 
         // Customer_order Entity
         String step4 = Prompts.step4(req);
         if(step4 != null) {
             String resp = executeStep(chat, "Step 4 (Orders)", step4);
-            sb.append(resp);
+            sb.append(resp).append("\n\n\n");
         }
         // Orderline Entity
         String step5 = Prompts.step5(req);
