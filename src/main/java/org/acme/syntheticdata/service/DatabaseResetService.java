@@ -26,6 +26,7 @@ public class DatabaseResetService {
                 WHERE table_schema = 'public' 
                   AND table_type = 'BASE TABLE'
                   AND table_name != 'flyway_schema_history'
+                  AND table_name != 'data_distribution_profile'
                 """;
             List<String> tables = jdbcTemplate.queryForList(fetchTablesSql, String.class);
             if (tables.isEmpty()) {

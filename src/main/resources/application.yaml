@@ -22,7 +22,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
-      open-in-view: false
+        open-in-view: false
   ai:
     vertex:
       ai:
@@ -36,7 +36,12 @@ logging:
     org.springframework.ai: INFO
     org.springframework.web.client.RestClient: INFO
 #management:
+#  metrics:
+#    export:
+#      otlp:
+#        enabled: true
 #  otlp:
 #    metrics:
 #      export:
 #        url: ${OTEL_METRICS_URL}
+#        step: 30s

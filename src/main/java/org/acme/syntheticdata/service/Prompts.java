@@ -58,7 +58,9 @@ public class Prompts {
         String step = """
             You are an autonomous database seeding agent.
             Follow these directives:
-                - Use data-generation skill to generate %d NEW customer_orders.
+                - Use data-generation skill to generate %d customer_orders.
+                - Their status should follow the distribution assigned.
+                - Use the appropriate tool to know what the valid statuses are.
                 - These MUST be additional unique orders for existing customers (do not re-insert or replace existing orders).
             Use data-insertion skill to insert the generated SQL.
             """.formatted(quantity);

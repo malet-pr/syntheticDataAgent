@@ -7,17 +7,13 @@ INSERT INTO data_distribution_profile (table_name, distribution_rules) VALUES
       "column_distributions": {
         "status": {
           "type": "categorical_percent",
-          "weights": {"ACTIVE": 80, "PENDING": 15, "INACTIVE": 5}
-        },
-        "customer_type": {
-          "type": "categorical_percent",
-          "weights": {"RETAIL": 85, "WHOLESALE": 15}
+          "weights": {"QUALIFIED": 80, "NEW": 15, "UNQUALIFIED": 5}
         }
       }
     }'::jsonb
 ),
 
--- 2. PRODUCT & CATALOG
+-- 2. PRODUCT
 (
     'product',
     '{
@@ -25,20 +21,19 @@ INSERT INTO data_distribution_profile (table_name, distribution_rules) VALUES
       "column_distributions": {
         "status": {
           "type": "categorical_percent",
-          "weights": {"AVAILABLE": 85, "OUT_OF_STOCK": 10, "DISCONTINUED": 5}
+          "weights": {"INSTOCK": 85, "LOWSTOCK": 10, "OUTOFSTOCK": 5}
         },
         "price": {
-          "type": "range_uniform",
-          "min": 5.00,
-          "max": 250.00
+          "type": "percent",
+          "weights": {"1-100": 60, "100–300": 25, "300–800": 10, "800–2000": 5}
         }
       }
     }'::jsonb
 ),
 
--- 3. ORDERS (Parent Entity)
+-- 3. CUSTOMER_ORDER (Parent Entity)
 (
-    'orders',
+    'customer_order',
     '{
       "description": "Order placement status and timeline rules",
       "parent_table": "customer",
@@ -46,22 +41,18 @@ INSERT INTO data_distribution_profile (table_name, distribution_rules) VALUES
       "column_distributions": {
         "status": {
           "type": "categorical_percent",
-          "weights": {"DELIVERED": 70, "SHIPPED": 15, "PROCESSING": 10, "CANCELLED": 5}
-        },
-        "payment_method": {
-          "type": "categorical_percent",
-          "weights": {"CREDIT_CARD": 60, "DEBIT_CARD": 25, "PIX": 10, "INVOICE": 5}
+          "weights": {"DELIVERED": 70, "CANCELLED": 15, "RETURNED": 10, "PENDING": 5}
         }
       }
     }'::jsonb
 ),
 
--- 4. ORDER LINES (Child / Cardinality Constraint)
+-- 4. ORDERLINE (Child / Cardinality Constraint)
 (
-    'order_line',
+    'orderline',
     '{
       "description": "Cardinality from orders to order_line with product skews",
-      "parent_table": "orders",
+      "parent_table": "customer_order",
       "parent_fk": "order_id",
       "child_cardinality": {
         "type": "categorical_percent",
@@ -80,25 +71,6 @@ INSERT INTO data_distribution_profile (table_name, distribution_rules) VALUES
           "type": "range_uniform",
           "min": 1,
           "max": 5
-        }
-      }
-    }'::jsonb
-),
-
--- 5. LOGISTICS / WAREHOUSE
-(
-    'logistic',
-    '{
-      "description": "Warehouse and carrier logistics assignment",
-      "column_distributions": {
-        "carrier_status": {
-          "type": "categorical_percent",
-          "weights": {"ACTIVE": 90, "MAINTENANCE": 10}
-        },
-        "capacity_utilization": {
-          "type": "range_uniform",
-          "min": 20,
-          "max": 95
         }
       }
     }'::jsonb
