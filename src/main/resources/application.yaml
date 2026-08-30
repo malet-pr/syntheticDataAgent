@@ -1,5 +1,5 @@
 server:
-  port: 5100
+  port: ${PORT:8080}
 
 spring:
   application:
@@ -11,7 +11,7 @@ spring:
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
-      minimum-idle: 5
+      minimum-idle: 3
       idle-timeout: 300000
       connection-timeout: 20000
       pool-name: hackDataPool
@@ -27,9 +27,9 @@ spring:
     vertex:
       ai:
         gemini:
-            project-id: ${GCP_PROJECT_ID}
+            project-id: ${GOOGLE_CLOUD_PROJECT}
             location: "global"
-            model: "gemini-3.5-flash"
+            model: "gemini-3.6-flash"
     max_batch_size: 100
 logging:
   level:
